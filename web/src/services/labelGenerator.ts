@@ -7,6 +7,7 @@ import {
   Shape,
   ShapeGeometry,
   ShapePath,
+  Color,
   type BufferGeometry,
 } from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
@@ -33,7 +34,15 @@ const stlLoader = new STLLoader();
 const svgLoader = new SVGLoader();
 
 function createMaterial(color: string) {
-  return new MeshStandardMaterial({ color, metalness: 0.1, roughness: 0.6 });
+  const mat = new MeshStandardMaterial({ metalness: 0.1, roughness: 0.6 });
+  try {
+    mat.color = new Color(color);
+  } catch (e) {
+    // fallback: default color
+    mat.color = new Color("#000000");
+  }
+  mat.needsUpdate = true;
+  return mat;
 }
 
 // Lazy-initialized state
