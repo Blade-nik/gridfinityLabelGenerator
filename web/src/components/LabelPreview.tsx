@@ -26,6 +26,7 @@ const VB = `${-VB_MARGIN} ${-VB_MARGIN} ${LABEL_W + VB_MARGIN * 2} ${LABEL_H + V
 
 const FONT = "Arial, 'Helvetica Neue', Helvetica, sans-serif";
 const ICON_GAP = 0.4; // mm between TX and number halves — keeps them visually tight
+const ALPHA_MASK_PROPS = { maskType: 'alpha' } as any;
 
 function fittingFontSize(text: string, maxW: number, maxH: number): number {
   const len = text.length || 1;
@@ -120,7 +121,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
             preserveAspectRatio="xMidYMid meet"
           >
             <defs>
-              <mask id={maskId} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" maskType="alpha">
+              <mask id={maskId} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" {...ALPHA_MASK_PROPS}>
                 <image
                   href={`data:image/svg+xml;charset=utf-8,${encoded}`}
                   x="0"
@@ -146,7 +147,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
       return (
         <svg x={ICON_BOX.x} y={ICON_BOX.y} width={ICON_BOX.w} height={ICON_BOX.h} viewBox="0 0 793.70079 1122.5197" preserveAspectRatio="xMidYMid meet">
           <defs>
-            <mask id={maskId2} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" maskType="alpha">
+            <mask id={maskId2} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" {...ALPHA_MASK_PROPS}>
               <image
                 href={`data:image/svg+xml;charset=utf-8,${encoded}`}
                 x="0"
@@ -203,7 +204,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
-            <mask id={line2MaskId} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" maskType="alpha">
+            <mask id={line2MaskId} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" {...ALPHA_MASK_PROPS}>
               <image
                 href={`data:image/svg+xml;charset=utf-8,${encoded}`}
                 x="0"
