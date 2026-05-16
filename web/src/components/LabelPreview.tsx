@@ -37,6 +37,10 @@ interface LabelPreviewProps {
 }
 
 export function LabelPreview({ label }: LabelPreviewProps) {
+  // Unique suffix for SVG mask IDs to avoid collisions when multiple SVGs
+  // are present in the DOM (duplicate IDs can hide icons in previews).
+  const uid = Math.random().toString(36).slice(2, 9);
+
   function renderLabelShape() {
     const baseFill = label?.baseColor ?? "#0f172a";
     // Paths from label.svg, scaled to overlay mm via:  scale(0.264583) translate(137.19, -1120.59)
@@ -104,6 +108,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
 
     if (label.iconSvg) {
       const encoded = encodeURIComponent(label.iconSvg);
+      const maskId = `icon-mask-${uid}`;
       if (label.iconViewBox) {
         return (
           <svg
@@ -115,7 +120,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
             preserveAspectRatio="xMidYMid meet"
           >
             <defs>
-              <mask id="icon-mask">
+              <mask id={maskId}>
                 <image
                   href={`data:image/svg+xml;charset=utf-8,${encoded}`}
                   x="0"
@@ -131,15 +136,16 @@ export function LabelPreview({ label }: LabelPreviewProps) {
               width="100%"
               height="100%"
               fill={textFill}
-              mask="url(#icon-mask)"
+              mask={`url(#${maskId})`}
             />
           </svg>
         );
       }
+      const maskId2 = `icon-mask-${uid}-2`;
       return (
         <svg x={ICON_BOX.x} y={ICON_BOX.y} width={ICON_BOX.w} height={ICON_BOX.h} viewBox="0 0 793.70079 1122.5197" preserveAspectRatio="xMidYMid meet">
           <defs>
-            <mask id="icon-mask">
+            <mask id={maskId2}>
               <image
                 href={`data:image/svg+xml;charset=utf-8,${encoded}`}
                 x="0"
@@ -149,7 +155,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
               />
             </mask>
           </defs>
-          <rect x="0" y="0" width="100%" height="100%" fill={textFill} mask="url(#icon-mask)" />
+          <rect x="0" y="0" width="100%" height="100%" fill={textFill} mask={`url(#${maskId2})`} />
         </svg>
       );
     }
@@ -184,6 +190,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
       // label.line2ViewBox overrides the default SCREW_SVG_VIEWBOX for TRP images.
       const vb = label.line2ViewBox ?? SCREW_SVG_VIEWBOX;
       const encoded = encodeURIComponent(label.line2Svg);
+      const line2MaskId = `line2-mask-${uid}`;
       return (
         <svg
           x={LINE2_BOX.x}
@@ -194,7 +201,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
-            <mask id="line2-mask">
+            <mask id={line2MaskId}>
               <image
                 href={`data:image/svg+xml;charset=utf-8,${encoded}`}
                 x="0"
@@ -210,7 +217,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
             width="100%"
             height="100%"
             fill={label.textColor ?? "#e2e8f0"}
-            mask="url(#line2-mask)"
+            mask={`url(#${line2MaskId})`}
           />
         </svg>
       );
