@@ -109,56 +109,25 @@ export function LabelPreview({ label }: LabelPreviewProps) {
 
     if (label.iconSvg) {
       const encoded = encodeURIComponent(label.iconSvg);
-      const maskId = `icon-mask-${uid}`;
-      if (label.iconViewBox) {
-        return (
-          <svg
-            x={ICON_BOX.x}
-            y={ICON_BOX.y}
-            width={ICON_BOX.w}
-            height={ICON_BOX.h}
-            viewBox={label.iconViewBox}
-            preserveAspectRatio="xMidYMid meet"
-          >
-            <defs>
-              <mask id={maskId} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" {...ALPHA_MASK_PROPS}>
-                <image
-                  href={`data:image/svg+xml;charset=utf-8,${encoded}`}
-                  x="0"
-                  y="0"
-                  width="793.70079"
-                  height="1122.5197"
-                  filter="url(#lp-to-white)"
-                />
-              </mask>
-            </defs>
-            <rect
-              x="0"
-              y="0"
-              width="100%"
-              height="100%"
-              fill={textFill}
-              mask={`url(#${maskId})`}
-            />
-          </svg>
-        );
-      }
-      const maskId2 = `icon-mask-${uid}-2`;
+      const vb = label.iconViewBox ?? "0 0 793.70079 1122.5197";
       return (
-        <svg x={ICON_BOX.x} y={ICON_BOX.y} width={ICON_BOX.w} height={ICON_BOX.h} viewBox="0 0 793.70079 1122.5197" preserveAspectRatio="xMidYMid meet">
-          <defs>
-            <mask id={maskId2} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" {...ALPHA_MASK_PROPS}>
-              <image
-                href={`data:image/svg+xml;charset=utf-8,${encoded}`}
-                x="0"
-                y="0"
-                width="793.70079"
-                height="1122.5197"
-                filter="url(#lp-to-white)"
-              />
-            </mask>
-          </defs>
-          <rect x="0" y="0" width="100%" height="100%" fill={textFill} mask={`url(#${maskId2})`} />
+        <svg
+          x={ICON_BOX.x}
+          y={ICON_BOX.y}
+          width={ICON_BOX.w}
+          height={ICON_BOX.h}
+          viewBox={vb}
+          preserveAspectRatio="xMidYMid meet"
+        >
+          <image
+            href={`data:image/svg+xml;charset=utf-8,${encoded}`}
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
+            preserveAspectRatio="xMidYMid meet"
+            filter="url(#lp-to-white)"
+          />
         </svg>
       );
     }
