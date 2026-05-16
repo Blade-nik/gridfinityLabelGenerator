@@ -120,7 +120,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
             preserveAspectRatio="xMidYMid meet"
           >
             <defs>
-              <mask id={maskId} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse">
+              <mask id={maskId} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" maskType="alpha">
                 <image
                   href={`data:image/svg+xml;charset=utf-8,${encoded}`}
                   x="0"
@@ -146,7 +146,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
       return (
         <svg x={ICON_BOX.x} y={ICON_BOX.y} width={ICON_BOX.w} height={ICON_BOX.h} viewBox="0 0 793.70079 1122.5197" preserveAspectRatio="xMidYMid meet">
           <defs>
-            <mask id={maskId2} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse">
+            <mask id={maskId2} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" maskType="alpha">
               <image
                 href={`data:image/svg+xml;charset=utf-8,${encoded}`}
                 x="0"
@@ -203,7 +203,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
-            <mask id={line2MaskId} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse">
+            <mask id={line2MaskId} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" maskType="alpha">
               <image
                 href={`data:image/svg+xml;charset=utf-8,${encoded}`}
                 x="0"
