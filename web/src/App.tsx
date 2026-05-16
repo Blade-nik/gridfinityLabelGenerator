@@ -49,7 +49,7 @@ export function App() {
   const handleCustom = async (input: LabelInput) => {
     setError("");
     const blob = await downloadSingle(input);
-    saveBlob(blob, `${slugifyTitle(input.title)}.stl`);
+    saveBlob(blob, `${slugifyTitle(input.title)}.3mf`);
   };
 
   const handleBatch = async (selected: PredefinedLabel[]) => {
@@ -61,7 +61,7 @@ export function App() {
     }
 
     const single = selected[0];
-    saveBlob(result.blob, `${slugifyTitle(single.title)}.stl`);
+    saveBlob(result.blob, `${slugifyTitle(single.title)}.3mf`);
   };
 
   return (

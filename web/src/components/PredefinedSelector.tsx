@@ -59,6 +59,8 @@ export function PredefinedSelector({ labels, onGenerate, onPreviewChange, isActi
   const [loading, setLoading] = useState(false);
   const [useWrenchSize, setUseWrenchSize] = useState(false);
   const [useImageLine2, setUseImageLine2] = useState(false);
+  const [baseColor, setBaseColor] = useState("#0f172a");
+  const [textColor, setTextColor] = useState("#e2e8f0");
 
   // Fire preview with M3 fixture only when the user actually changes a checkbox option
   // (skip the initial mount so the custom-form preview wins on page load)
@@ -76,8 +78,8 @@ export function PredefinedSelector({ labels, onGenerate, onPreviewChange, isActi
     if (!useImageLine2) {
       preview = { ...preview, line2Svg: undefined };
     }
-    onPreviewChange(preview);
-  }, [useWrenchSize, useImageLine2, onPreviewChange]);
+    onPreviewChange({ ...preview, baseColor, textColor });
+  }, [useWrenchSize, useImageLine2, baseColor, textColor, onPreviewChange]);
 
   const anyHasWrenchSize = useMemo(() => labels.some((l) => l.wrenchSize), [labels]);
   const anyHasLine2Svg = useMemo(() => labels.some((l) => l.line2Svg), [labels]);
@@ -177,7 +179,7 @@ export function PredefinedSelector({ labels, onGenerate, onPreviewChange, isActi
         if (!useImageLine2) {
           label = { ...label, line2Svg: undefined };
         }
-        return label;
+        return { ...label, baseColor, textColor };
       });
       await onGenerate(labelsToGenerate);
     } finally {
@@ -263,6 +265,16 @@ export function PredefinedSelector({ labels, onGenerate, onPreviewChange, isActi
         })}
       </div>
       <span className="options-heading">Export Settings</span>
+      <div className="color-selectors">
+        <label>
+          Base Color
+          <input type="color" value={baseColor} onChange={(e) => setBaseColor(e.target.value)} />
+        </label>
+        <label>
+          Text Color
+          <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} />
+        </label>
+      </div>
       {anyHasWrenchSize && (
         <label className="list-item">
           <input
@@ -287,9 +299,9 @@ export function PredefinedSelector({ labels, onGenerate, onPreviewChange, isActi
         {loading
           ? "Generating..."
           : selectedItems.length === 0
-            ? "Download STL"
+            ? "Download 3MF"
             : selectedItems.length === 1
-              ? "Download STL"
+              ? "Download 3MF"
               : `Download ZIP (${selectedItems.length})`}
       </button>
     </section>

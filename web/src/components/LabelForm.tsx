@@ -22,31 +22,31 @@ import trpPanHeadSvg from "../assets/TRP_PanHead.svg?raw";
 import trpPanSelfTapSvg from "../assets/TRP_panHead_selfTapping.svg?raw";
 
 const CLIPARTS = [
-  { id: "hex",          label: "Hex",         svg: hexSvg,         viewBox: "299 276 111 111" },
-  { id: "insert",       label: "Insert",      svg: insertSvg,      viewBox: "537 346 75 98"  },
-  { id: "lockwasher",   label: "Lock Washer", svg: lockwasherSvg,  viewBox: "38 564 111 111" },
-  { id: "nut",          label: "Nut",         svg: nutSvg,         viewBox: "307 549 137 120" },
-  { id: "nylock",       label: "Nylock",      svg: nylockSvg,      viewBox: "477 549 137 120" },
-  { id: "phillips",     label: "Phillips",    svg: phillipsSvg,    viewBox: "81 51 112 112" },
-  { id: "slot",         label: "Slot",        svg: slotSvg,        viewBox: "35 125 125 113" },
-  { id: "torx",         label: "Torx",        svg: torxSvg,        viewBox: "541 127 112 112" },
-  { id: "washer",       label: "Washer",      svg: washerSvg,      viewBox: "38 280 112 112" },
-  { id: "washer_large", label: "Washer L",    svg: washerLargeSvg, viewBox: "48 421 112 112" },
+  { id: "hex", label: "Hex", svg: hexSvg, viewBox: "299 276 111 111" },
+  { id: "insert", label: "Insert", svg: insertSvg, viewBox: "537 346 75 98" },
+  { id: "lockwasher", label: "Lock Washer", svg: lockwasherSvg, viewBox: "38 564 111 111" },
+  { id: "nut", label: "Nut", svg: nutSvg, viewBox: "307 549 137 120" },
+  { id: "nylock", label: "Nylock", svg: nylockSvg, viewBox: "477 549 137 120" },
+  { id: "phillips", label: "Phillips", svg: phillipsSvg, viewBox: "81 51 112 112" },
+  { id: "slot", label: "Slot", svg: slotSvg, viewBox: "35 125 125 113" },
+  { id: "torx", label: "Torx", svg: torxSvg, viewBox: "541 127 112 112" },
+  { id: "washer", label: "Washer", svg: washerSvg, viewBox: "38 280 112 112" },
+  { id: "washer_large", label: "Washer L", svg: washerLargeSvg, viewBox: "48 421 112 112" },
 ];
 
 // TRP screw-profile images for the line-2 box.
 // viewBox crops each A4-canvas SVG (793×1122) to the actual drawing area.
 const LINE2_IMAGES = [
-  { id: "btn",     label: "Button Head",   svg: trpButtonHeadSvg,  viewBox: "25 1070 93 29"  },
-  { id: "csk",     label: "Countersunk",   svg: trpCountersunkSvg, viewBox: "82 924 91 37"  },
-  { id: "csk-st",  label: "Csk Self-Tap",  svg: trpCskSelfTapSvg,  viewBox: "136 255 98 38"  },
-  { id: "cyl",     label: "Cylinder Head", svg: trpCylinderSvg,    viewBox: "19 1080 96 31"  },
-  { id: "cyl-st",  label: "Cyl Self-Tap",  svg: trpCylSelfTapSvg,  viewBox: "133 400 103 35" },
-  { id: "grub",    label: "Grub Screw",    svg: trpGrubSvg,        viewBox: "84 265 44 22"  },
-  { id: "hex",     label: "Hex Head",      svg: trpHexagonSvg,     viewBox: "12 1000 93 33"  },
-  { id: "low",     label: "Low Head",      svg: trpLowHeadSvg,     viewBox: "28 1042 93 32"  },
-  { id: "pan",     label: "Pan Head",      svg: trpPanHeadSvg,     viewBox: "72 977 107 31"  },
-  { id: "pan-st",  label: "Pan Self-Tap",  svg: trpPanSelfTapSvg,  viewBox: "134 329 97 33" },
+  { id: "btn", label: "Button Head", svg: trpButtonHeadSvg, viewBox: "25 1070 93 29" },
+  { id: "csk", label: "Countersunk", svg: trpCountersunkSvg, viewBox: "82 924 91 37" },
+  { id: "csk-st", label: "Csk Self-Tap", svg: trpCskSelfTapSvg, viewBox: "136 255 98 38" },
+  { id: "cyl", label: "Cylinder Head", svg: trpCylinderSvg, viewBox: "19 1080 96 31" },
+  { id: "cyl-st", label: "Cyl Self-Tap", svg: trpCylSelfTapSvg, viewBox: "133 400 103 35" },
+  { id: "grub", label: "Grub Screw", svg: trpGrubSvg, viewBox: "84 265 44 22" },
+  { id: "hex", label: "Hex Head", svg: trpHexagonSvg, viewBox: "12 1000 93 33" },
+  { id: "low", label: "Low Head", svg: trpLowHeadSvg, viewBox: "28 1042 93 32" },
+  { id: "pan", label: "Pan Head", svg: trpPanHeadSvg, viewBox: "72 977 107 31" },
+  { id: "pan-st", label: "Pan Self-Tap", svg: trpPanSelfTapSvg, viewBox: "134 329 97 33" },
 ];
 
 interface LabelFormProps {
@@ -63,6 +63,8 @@ export function LabelForm({ onGenerate, onPreviewChange, isActive, onActivate }:
   const [selectedLine2Image, setSelectedLine2Image] = useState<string | null>(null);
   const [selectedClipart, setSelectedClipart] = useState<string | null>("torx");
   const [labelWidth, setLabelWidth] = useState<1 | 2 | 3>(1);
+  const [baseColor, setBaseColor] = useState("#0f172a");
+  const [textColor, setTextColor] = useState("#e2e8f0");
   const [loading, setLoading] = useState(false);
 
   function buildLabel(): LabelInput {
@@ -72,10 +74,21 @@ export function LabelForm({ onGenerate, onPreviewChange, isActive, onActivate }:
     if (line2Mode === "image" && selectedLine2Image) {
       const img = LINE2_IMAGES.find((i) => i.id === selectedLine2Image)!;
       const title = [line1].filter(Boolean).join(" ");
-      return { title, line1, line2: "", iconSvg, iconViewBox, line2Svg: img.svg, line2ViewBox: img.viewBox, labelWidth };
+      return {
+        title,
+        line1,
+        line2: "",
+        iconSvg,
+        iconViewBox,
+        line2Svg: img.svg,
+        line2ViewBox: img.viewBox,
+        labelWidth,
+        baseColor,
+        textColor,
+      };
     }
     const title = [line1, line2].filter(Boolean).join(" ");
-    return { title, line1, line2, iconSvg, iconViewBox, labelWidth };
+    return { title, line1, line2, iconSvg, iconViewBox, labelWidth, baseColor, textColor };
   }
 
   // Emit preview on every change, and once on mount
@@ -193,6 +206,16 @@ export function LabelForm({ onGenerate, onPreviewChange, isActive, onActivate }:
           ))}
         </div>
       </div>
+      <div className="color-selectors">
+        <label>
+          Base Color
+          <input type="color" value={baseColor} onChange={(e) => setBaseColor(e.target.value)} />
+        </label>
+        <label>
+          Text Color
+          <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} />
+        </label>
+      </div>
       <div className="width-selector">
         <span>Label Width</span>
         <div className="mode-toggle">
@@ -210,7 +233,7 @@ export function LabelForm({ onGenerate, onPreviewChange, isActive, onActivate }:
         </div>
       </div>
       <button type="submit" disabled={loading}>
-        {loading ? "Generating..." : "Download STL"}
+        {loading ? "Generating..." : "Download 3MF"}
       </button>
     </form>
   );

@@ -3,16 +3,16 @@ import {
   ExtrudeGeometry,
   Group,
   Mesh,
-  MeshNormalMaterial,
+  MeshStandardMaterial,
   Shape,
   ShapeGeometry,
   ShapePath,
   type BufferGeometry,
 } from "three";
-import { STLExporter } from "three/examples/jsm/exporters/STLExporter.js";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import { FontLoader, type Font } from "three/examples/jsm/loaders/FontLoader.js";
+import { exportTo3MF } from "three-3mf-exporter";
 import type { LabelInput } from "../types/label";
 
 const EMBOSS_HEIGHT = 0.4;
@@ -29,10 +29,12 @@ const TEXT_BOTTOM_BOX = { x1: 11, y1: 0.5, x2: 34.5, y2: 4.75 };
 
 type Rect = { x1: number; y1: number; x2: number; y2: number };
 
-const material = new MeshNormalMaterial();
 const stlLoader = new STLLoader();
 const svgLoader = new SVGLoader();
-const exporter = new STLExporter();
+
+function createMaterial(color: string) {
+  return new MeshStandardMaterial({ color, metalness: 0.1, roughness: 0.6 });
+}
 
 // Lazy-initialized state
 let _init: Promise<void> | null = null;
@@ -67,8 +69,18 @@ function ensureInitialized(): Promise<void> {
   return _init;
 }
 
-function cloneBaseMesh(): Mesh<BufferGeometry> {
+function cloneBaseMesh(material: MeshStandardMaterial): Mesh<BufferGeometry> {
   return new Mesh(baseGeometry.clone(), material);
+}
+
+function toExtrudedMesh(shapes: Shape[], depth: number, material: MeshStandardMaterial): Mesh {
+  const geometry = new ExtrudeGeometry(shapes, {
+    depth,
+    bevelEnabled: false,
+    curveSegments: 10,
+  });
+  geometry.computeVertexNormals();
+  return new Mesh(geometry, material);
 }
 
 // Generates Three.js shapes for `text` at `size` with reduced letter spacing.
@@ -103,7 +115,7 @@ function generateShapesWithTracking(text: string, size: number): Shape[] {
           const cx = +outline[i++] * scale + offsetX, cy = +outline[i++] * scale;
           path.quadraticCurveTo(cx, cy, ex, ey);
         } else if (action === "b") {
-          const ex  = +outline[i++] * scale + offsetX, ey  = +outline[i++] * scale;
+          const ex = +outline[i++] * scale + offsetX, ey = +outline[i++] * scale;
           const c1x = +outline[i++] * scale + offsetX, c1y = +outline[i++] * scale;
           const c2x = +outline[i++] * scale + offsetX, c2y = +outline[i++] * scale;
           path.bezierCurveTo(c1x, c1y, c2x, c2y, ex, ey);
@@ -116,16 +128,6 @@ function generateShapesWithTracking(text: string, size: number): Shape[] {
   }
 
   return shapes;
-}
-
-function toExtrudedMesh(shapes: Shape[], depth: number): Mesh {
-  const geometry = new ExtrudeGeometry(shapes, {
-    depth,
-    bevelEnabled: false,
-    curveSegments: 10,
-  });
-  geometry.computeVertexNormals();
-  return new Mesh(geometry, material);
 }
 
 function getTextBounds(text: string, size: number): Box3 | null {
@@ -176,7 +178,7 @@ function widenGeometry(geometry: BufferGeometry, extraWidth: number): void {
   geometry.computeVertexNormals();
 }
 
-function buildSvgMeshInBox(svgString: string, box: Rect): Mesh | null {
+function buildSvgMeshInBox(svgString: string, box: Rect, material: MeshStandardMaterial): Mesh | null {
   if (!svgString) return null;
   const parsed = svgLoader.parse(svgString);
   const shapes: Shape[] = [];
@@ -185,7 +187,7 @@ function buildSvgMeshInBox(svgString: string, box: Rect): Mesh | null {
   }
   if (shapes.length === 0) return null;
 
-  const extruded = toExtrudedMesh(shapes, EMBOSS_HEIGHT);
+  const extruded = toExtrudedMesh(shapes, EMBOSS_HEIGHT, material);
   const sourceBounds = getMeshBounds(extruded);
   const sourceWidth = sourceBounds.max.x - sourceBounds.min.x;
   const sourceHeight = sourceBounds.max.y - sourceBounds.min.y;
@@ -197,7 +199,7 @@ function buildSvgMeshInBox(svgString: string, box: Rect): Mesh | null {
 
   // SVG assets use screen coordinates where Y grows downward. Rotate the
   // geometry around X instead of using a negative scale so triangle winding
-  // stays outward-facing in the exported STL.
+  // stays outward-facing in the exported model.
   extruded.geometry.rotateX(Math.PI);
   extruded.geometry.scale(scale, scale, 1);
   extruded.geometry.computeVertexNormals();
@@ -212,11 +214,11 @@ function buildSvgMeshInBox(svgString: string, box: Rect): Mesh | null {
   return extruded;
 }
 
-function buildIconMesh(iconSvg: string): Mesh | null {
-  return buildSvgMeshInBox(iconSvg, SVG_BOX);
+function buildIconMesh(iconSvg: string, material: MeshStandardMaterial): Mesh | null {
+  return buildSvgMeshInBox(iconSvg, SVG_BOX, material);
 }
 
-function buildIconTextMeshes(text: string): Mesh[] {
+function buildIconTextMeshes(text: string, material: MeshStandardMaterial): Mesh[] {
   const target = toWorldBox(SVG_BOX);
   const targetSize = getBoxSize(target);
 
@@ -230,16 +232,16 @@ function buildIconTextMeshes(text: string): Mesh[] {
     const topY = target.y1 + halfHeight + GAP;
 
     const topSize = chooseTextSizeForBox(prefix, targetSize.width, halfHeight);
-    const topMesh = createTextLineMesh(prefix, topSize, target.x1, topY, targetSize.width, halfHeight);
+    const topMesh = createTextLineMesh(prefix, topSize, target.x1, topY, targetSize.width, halfHeight, material);
 
     const botSize = chooseTextSizeForBox(number, targetSize.width, halfHeight);
-    const botMesh = createTextLineMesh(number, botSize, target.x1, botY, targetSize.width, halfHeight);
+    const botMesh = createTextLineMesh(number, botSize, target.x1, botY, targetSize.width, halfHeight, material);
 
     return [topMesh, botMesh].filter(Boolean) as Mesh[];
   }
 
   const size = chooseTextSizeForBox(text, targetSize.width, targetSize.height);
-  const mesh = createTextLineMesh(text, size, target.x1, target.y1, targetSize.width, targetSize.height);
+  const mesh = createTextLineMesh(text, size, target.x1, target.y1, targetSize.width, targetSize.height, material);
   return mesh ? [mesh] : [];
 }
 
@@ -262,7 +264,8 @@ function createTextLineMesh(
   x: number,
   y: number,
   width: number,
-  height: number
+  height: number,
+  material: MeshStandardMaterial
 ): Mesh | null {
   const trimmed = text.trim();
   if (!trimmed) return null;
@@ -295,7 +298,7 @@ function createTextLineMesh(
   return mesh;
 }
 
-function buildTextMeshes(label: LabelInput): Mesh[] {
+function buildTextMeshes(label: LabelInput, embossMaterial: MeshStandardMaterial): Mesh[] {
   const topBox = toWorldBox(TEXT_TOP_BOX);
   const bottomBox = toWorldBox(TEXT_BOTTOM_BOX);
   const topSize = getBoxSize(topBox);
@@ -304,15 +307,15 @@ function buildTextMeshes(label: LabelInput): Mesh[] {
   const meshes: Mesh[] = [];
 
   const topFontSize = chooseTextSizeForBox(label.line1, topSize.width, topSize.height);
-  const line1Mesh = createTextLineMesh(label.line1, topFontSize, topBox.x1, topBox.y1, topSize.width, topSize.height);
+  const line1Mesh = createTextLineMesh(label.line1, topFontSize, topBox.x1, topBox.y1, topSize.width, topSize.height, embossMaterial);
   if (line1Mesh) meshes.push(line1Mesh);
 
   if (label.line2Svg) {
-    const line2Mesh = buildSvgMeshInBox(label.line2Svg, TEXT_BOTTOM_BOX);
+    const line2Mesh = buildSvgMeshInBox(label.line2Svg, TEXT_BOTTOM_BOX, embossMaterial);
     if (line2Mesh) meshes.push(line2Mesh);
   } else {
     const bottomFontSize = chooseTextSizeForBox(label.line2, bottomSize.width, bottomSize.height);
-    const line2Mesh = createTextLineMesh(label.line2, bottomFontSize, bottomBox.x1, bottomBox.y1, bottomSize.width, bottomSize.height);
+    const line2Mesh = createTextLineMesh(label.line2, bottomFontSize, bottomBox.x1, bottomBox.y1, bottomSize.width, bottomSize.height, embossMaterial);
     if (line2Mesh) meshes.push(line2Mesh);
   }
 
@@ -331,26 +334,27 @@ export async function generateLabelStl(label: LabelInput): Promise<ArrayBuffer> 
   // Centre the marking on the expanded label
   contentXOffset = extraWidth / 2;
 
-  const baseMesh = cloneBaseMesh();
+  const baseColor = label.baseColor ?? "#0f172a";
+  const textColor = label.textColor ?? "#e2e8f0";
+  const baseMaterial = createMaterial(baseColor);
+  const embossMaterial = createMaterial(textColor);
+
+  const baseMesh = cloneBaseMesh(baseMaterial);
   if (extraWidth > 0) widenGeometry(baseMesh.geometry, extraWidth);
 
   const root = new Group();
   root.add(baseMesh);
   if (label.iconText) {
-    for (const m of buildIconTextMeshes(label.iconText)) root.add(m);
+    for (const m of buildIconTextMeshes(label.iconText, embossMaterial)) root.add(m);
   } else {
-    const iconMesh = buildIconMesh(label.iconSvg);
+    const iconMesh = buildIconMesh(label.iconSvg, embossMaterial);
     if (iconMesh) root.add(iconMesh);
   }
-  for (const textMesh of buildTextMeshes(label)) {
+  for (const textMesh of buildTextMeshes(label, embossMaterial)) {
     root.add(textMesh);
   }
   root.updateMatrixWorld(true);
 
-  const result = exporter.parse(root, { binary: true });
-  if (result instanceof DataView) {
-    return result.buffer.slice(result.byteOffset, result.byteOffset + result.byteLength);
-  }
-  // Fallback: ASCII string result
-  return new TextEncoder().encode(result as unknown as string).buffer;
+  const blob = await exportTo3MF(root);
+  return await blob.arrayBuffer();
 }

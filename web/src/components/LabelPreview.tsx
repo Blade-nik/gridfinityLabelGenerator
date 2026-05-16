@@ -16,8 +16,8 @@ const SCREW_SVG_VIEWBOX = "32.4 18.7 80.2 16";
 const LABEL_W = 37.8;
 const LABEL_H = 11.5;
 
-const ICON_BOX  = { x: 3.0,  y: 1.0,  w: 9.5,  h: 9.5  };
-const LINE1_BOX = { x: 13.5, y: 1.0,  w: 21.3, h: 4.25 }; // top half
+const ICON_BOX = { x: 3.0, y: 1.0, w: 9.5, h: 9.5 };
+const LINE1_BOX = { x: 13.5, y: 1.0, w: 21.3, h: 4.25 }; // top half
 const LINE2_BOX = { x: 13.5, y: 6.25, w: 21.3, h: 4.25 }; // bottom half
 
 // Outer viewBox adds 1mm margin on all sides so the label outline stroke isn't clipped
@@ -38,20 +38,21 @@ interface LabelPreviewProps {
 
 export function LabelPreview({ label }: LabelPreviewProps) {
   function renderLabelShape() {
+    const baseFill = label?.baseColor ?? "#0f172a";
     // Paths from label.svg, scaled to overlay mm via:  scale(0.264583) translate(137.19, -1120.59)
     return (
       <g transform={LABEL_TRANSFORM} strokeLinecap="round" strokeLinejoin="round">
         {/* Outer body (main rectangle + side tabs) */}
         <path
           d="M 5.669669,1131.5528 H 1.889764 v -7.5591 a 3.401575,3.401575 0 0 0 -3.401575,-3.4016 H -130.01575 a 3.401575,3.401575 0 0 0 -3.40157,3.4016 v 7.5591 h -3.77991 v 21.5433 h 3.77991 v 7.559 a 3.401575,3.401575 0 0 0 3.40157,3.4016 H -1.511811 a 3.401575,3.401575 0 0 0 3.401575,-3.4016 v -7.559 h 3.779905 z"
-          fill="#1e293b"
+          fill={baseFill}
           stroke="#475569"
           strokeWidth="1.89"
         />
         {/* Inner printed area */}
         <path
           d="m -130.01575,1122.4819 a 1.511811,1.511811 0 0 0 -1.51181,1.5118 v 10.7128 a 3.779528,3.779528 0 0 0 2.09974,3.3858 4.724409,4.724409 0 0 1 0,8.4643 3.779528,3.779528 0 0 0 -2.09974,3.3857 v 10.7128 a 1.511811,1.511811 0 0 0 1.51181,1.5118 H -1.511811 A 1.511811,1.511811 0 0 0 0,1160.6551 v -10.7128 a 3.779528,3.779528 0 0 0 -2.099738,-3.3857 4.724409,4.724409 0 0 1 0,-8.4643 A 3.779528,3.779528 0 0 0 0,1134.7065 v -10.7128 a 1.511811,1.511811 0 0 0 -1.511811,-1.5118 z"
-          fill="#0f172a"
+          fill={baseFill}
           stroke="none"
         />
         {/* Left mounting pin */}
@@ -75,6 +76,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
   function renderIcon() {
     if (!label) return null;
 
+    const textFill = label.textColor ?? "#e2e8f0";
     if (label.iconText) {
       const match = label.iconText.match(/^([A-Za-z]+)(\d+.*)$/);
       const parts = match ? [match[1], match[2]] : [label.iconText];
@@ -90,7 +92,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
             textAnchor="middle"
             dominantBaseline="central"
             fontSize={fs}
-            fill="#e2e8f0"
+            fill={textFill}
             fontWeight="bold"
             fontFamily={FONT}
           >
@@ -113,31 +115,42 @@ export function LabelPreview({ label }: LabelPreviewProps) {
             preserveAspectRatio="xMidYMid meet"
           >
             <defs>
-              <filter id="icon-to-white">
-                <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0" />
-              </filter>
+              <mask id="icon-mask">
+                <image
+                  href={`data:image/svg+xml;charset=utf-8,${encoded}`}
+                  x="0"
+                  y="0"
+                  width="793.70079"
+                  height="1122.5197"
+                />
+              </mask>
             </defs>
-            <image
-              href={`data:image/svg+xml;charset=utf-8,${encoded}`}
+            <rect
               x="0"
               y="0"
-              width="793.70079"
-              height="1122.5197"
-              filter="url(#icon-to-white)"
+              width="100%"
+              height="100%"
+              fill={textFill}
+              mask="url(#icon-mask)"
             />
           </svg>
         );
       }
       return (
-        <image
-          href={`data:image/svg+xml;charset=utf-8,${encoded}`}
-          x={ICON_BOX.x}
-          y={ICON_BOX.y}
-          width={ICON_BOX.w}
-          height={ICON_BOX.h}
-          preserveAspectRatio="xMidYMid meet"
-          filter="url(#lp-to-white)"
-        />
+        <svg x={ICON_BOX.x} y={ICON_BOX.y} width={ICON_BOX.w} height={ICON_BOX.h} viewBox="0 0 793.70079 1122.5197" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <mask id="icon-mask">
+              <image
+                href={`data:image/svg+xml;charset=utf-8,${encoded}`}
+                x="0"
+                y="0"
+                width="793.70079"
+                height="1122.5197"
+              />
+            </mask>
+          </defs>
+          <rect x="0" y="0" width="100%" height="100%" fill={textFill} mask="url(#icon-mask)" />
+        </svg>
       );
     }
 
@@ -154,7 +167,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
         textAnchor="middle"
         dominantBaseline="central"
         fontSize={fs}
-        fill="#e2e8f0"
+        fill={label.textColor ?? "#e2e8f0"}
         fontWeight="bold"
         fontFamily={FONT}
       >
@@ -181,17 +194,23 @@ export function LabelPreview({ label }: LabelPreviewProps) {
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
-            <filter id="line2-to-white">
-              <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0" />
-            </filter>
+            <mask id="line2-mask">
+              <image
+                href={`data:image/svg+xml;charset=utf-8,${encoded}`}
+                x="0"
+                y="0"
+                width="793.70079"
+                height="1122.5197"
+              />
+            </mask>
           </defs>
-          <image
-            href={`data:image/svg+xml;charset=utf-8,${encoded}`}
+          <rect
             x="0"
             y="0"
-            width="793.70079"
-            height="1122.5197"
-            filter="url(#line2-to-white)"
+            width="100%"
+            height="100%"
+            fill={label.textColor ?? "#e2e8f0"}
+            mask="url(#line2-mask)"
           />
         </svg>
       );
@@ -206,7 +225,7 @@ export function LabelPreview({ label }: LabelPreviewProps) {
         textAnchor="middle"
         dominantBaseline="central"
         fontSize={fs}
-        fill="#e2e8f0"
+        fill={label.textColor ?? "#e2e8f0"}
         fontWeight="bold"
         fontFamily={FONT}
       >
