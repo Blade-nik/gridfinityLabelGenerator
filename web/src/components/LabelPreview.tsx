@@ -116,10 +116,11 @@ export function LabelPreview({ label }: LabelPreviewProps) {
       const vb = label.iconViewBox ?? "0 0 793.70079 1122.5197";
       // Ensure icon paths/strokes use the selected text color (replace common black values).
       const color = textFill;
-      inner = inner.replace(/(fill|stroke)=\"#(?:000|000000)\"/ig, `$1=\"${color}\"`);
-      inner = inner.replace(/(fill|stroke)=\'#(?:000|000000)\'/ig, `$1=\'${color}\'`);
-      inner = inner.replace(/fill:\s*#(?:000|000000)/ig, `fill:${color}`);
-      inner = inner.replace(/stroke:\s*#(?:000|000000)/ig, `stroke:${color}`);
+      // Replace black hex colors of form #000, #000000, or #00000000 (with alpha)
+      inner = inner.replace(/(fill|stroke)=(\")#0{3}[0-9A-Fa-f]{0,5}(\")/ig, `$1=$2${color}$3`);
+      inner = inner.replace(/(fill|stroke)=(')#0{3}[0-9A-Fa-f]{0,5}(')/ig, `$1=$2${color}$3`);
+      inner = inner.replace(/fill:\s*#0{3}[0-9A-Fa-f]{0,5}/ig, `fill:${color}`);
+      inner = inner.replace(/stroke:\s*#0{3}[0-9A-Fa-f]{0,5}/ig, `stroke:${color}`);
       return (
         <svg
           x={ICON_BOX.x}
@@ -167,10 +168,10 @@ export function LabelPreview({ label }: LabelPreviewProps) {
       let inner = raw.replace(/^\s*<svg[^>]*>/i, "").replace(/<\/svg>\s*$/i, "");
       // Apply textColor to common black fills/strokes inside the inlined SVG
       const color2 = label.textColor ?? "#e2e8f0";
-      inner = inner.replace(/(fill|stroke)=\"#(?:000|000000)\"/ig, `$1=\"${color2}\"`);
-      inner = inner.replace(/(fill|stroke)=\'#(?:000|000000)\'/ig, `$1=\'${color2}\'`);
-      inner = inner.replace(/fill:\s*#(?:000|000000)/ig, `fill:${color2}`);
-      inner = inner.replace(/stroke:\s*#(?:000|000000)/ig, `stroke:${color2}`);
+      inner = inner.replace(/(fill|stroke)=(\")#0{3}[0-9A-Fa-f]{0,5}(\")/ig, `$1=$2${color2}$3`);
+      inner = inner.replace(/(fill|stroke)=(')#0{3}[0-9A-Fa-f]{0,5}(')/ig, `$1=$2${color2}$3`);
+      inner = inner.replace(/fill:\s*#0{3}[0-9A-Fa-f]{0,5}/ig, `fill:${color2}`);
+      inner = inner.replace(/stroke:\s*#0{3}[0-9A-Fa-f]{0,5}/ig, `stroke:${color2}`);
       return (
         <svg
           x={LINE2_BOX.x}
