@@ -108,7 +108,11 @@ export function LabelPreview({ label }: LabelPreviewProps) {
     }
 
     if (label.iconSvg) {
-      const encoded = encodeURIComponent(label.iconSvg);
+      // Inline the SVG content instead of embedding via <image/>,
+      // because embedding as image can cause filters / masks to behave inconsistently.
+      // Strip XML prolog and outer <svg> wrapper so we can inject only the inner nodes.
+      const raw = label.iconSvg.replace(/^\s*<\?xml[^>]*>\s*/i, "");
+      const inner = raw.replace(/^\s*<svg[^>]*>/i, "").replace(/<\/svg>\s*$/i, "");
       const vb = label.iconViewBox ?? "0 0 793.70079 1122.5197";
       return (
         <svg
@@ -118,17 +122,8 @@ export function LabelPreview({ label }: LabelPreviewProps) {
           height={ICON_BOX.h}
           viewBox={vb}
           preserveAspectRatio="xMidYMid meet"
-        >
-          <image
-            href={`data:image/svg+xml;charset=utf-8,${encoded}`}
-            x="0"
-            y="0"
-            width="100%"
-            height="100%"
-            preserveAspectRatio="xMidYMid meet"
-            filter="url(#lp-to-white)"
-          />
-        </svg>
+          dangerouslySetInnerHTML={{ __html: inner }}
+        />
       );
     }
 
@@ -161,8 +156,9 @@ export function LabelPreview({ label }: LabelPreviewProps) {
       // Use a nested <svg> with a viewBox cropped to the actual content area.
       // label.line2ViewBox overrides the default SCREW_SVG_VIEWBOX for TRP images.
       const vb = label.line2ViewBox ?? SCREW_SVG_VIEWBOX;
-      const encoded = encodeURIComponent(label.line2Svg);
-      const line2MaskId = `line2-mask-${uid}`;
+      // Inline line2 SVG content similarly so it displays correctly in the preview.
+      const raw = label.line2Svg.replace(/^\s*<\?xml[^>]*>\s*/i, "");
+      const inner = raw.replace(/^\s*<svg[^>]*>/i, "").replace(/<\/svg>\s*$/i, "");
       return (
         <svg
           x={LINE2_BOX.x}
@@ -171,28 +167,8 @@ export function LabelPreview({ label }: LabelPreviewProps) {
           height={LINE2_BOX.h}
           viewBox={vb}
           preserveAspectRatio="xMidYMid meet"
-        >
-          <defs>
-            <mask id={line2MaskId} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" {...ALPHA_MASK_PROPS}>
-              <image
-                href={`data:image/svg+xml;charset=utf-8,${encoded}`}
-                x="0"
-                y="0"
-                width="793.70079"
-                height="1122.5197"
-                filter="url(#lp-to-white)"
-              />
-            </mask>
-          </defs>
-          <rect
-            x="0"
-            y="0"
-            width="100%"
-            height="100%"
-            fill={label.textColor ?? "#e2e8f0"}
-            mask={`url(#${line2MaskId})`}
-          />
-        </svg>
+          dangerouslySetInnerHTML={{ __html: inner }}
+        />
       );
     }
 
